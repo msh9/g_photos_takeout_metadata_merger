@@ -4,9 +4,6 @@ import tempfile
 import pathlib
 from photo_metadata_merger.exifio import archive
 
-_example_image_root = './resources/example-img'
-_example_video_root = './resources/example-video'
-_other_example_image_root = './resources/other-img'
 _resource_directory = 'resources'
 
 class TestPhotoArchive(unittest.TestCase):
