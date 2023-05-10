@@ -9,15 +9,15 @@ class PhotoArchive:
     """PhotoArchive provides streaming methods for reading photos and metadata in pairs from Google Takeout Archives"""
 
     def __init__(self, tarfile_path) -> None:
-        self.tarfile_path = tarfile_path
-        self.archive_iterator = None
+        self._tarfile_path = tarfile_path
+        self._archive_iterator = None
     
     def __enter__(self):
-        self.archive = tarfile.open(self.tarfile_path, 'r:gz')
+        self._archive = tarfile.open(self._tarfile_path, 'r:gz')
         return self
         
     def __exit__(self, exc_type, exc_val, exc_tb):
-        self.archive.close()
+        self._archive.close()
         return False
 
     def __iter__(self):
@@ -32,12 +32,12 @@ class PhotoArchive:
                     compressed_file_suffix in _supported_video_file_extensions)
 
     def _get_next_non_metadata_file(self):
-        if self.archive_iterator is None:
-            self.archive_iterator = iter(self.archive)
+        if self._archive_iterator is None:
+            self._archive_iterator = iter(self._archive)
 
         try:
             while True:
-                compressed_file = next(self.archive_iterator)
+                compressed_file = next(self._archive_iterator)
                 if compressed_file.isfile():
                     name_as_path = PurePath(compressed_file.name)
                     is_image_or_video = PhotoArchive._is_file_image_or_video(name_as_path)
@@ -45,5 +45,12 @@ class PhotoArchive:
                         metadata_file_path = name_as_path.with_suffix(name_as_path.suffix + _json_file_suffix)
                         return (name_as_path, metadata_file_path)
         except StopIteration as ex:
-            self.archive_iterator = None
+            self._archive_iterator = None
             raise ex
+
+class ArchivePair:
+    """Transfer object for pairs of names identifying data and metadata objects discovered in a takeout archive"""
+
+    def __init__(self, data_name, metadata_name):
+        self.data_name = data_name
+        self.metadata_name = metadata_name
