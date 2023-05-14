@@ -1,0 +1,36 @@
+{
+  "title": "example-video.mp4",
+  "description": "",
+  "imageViews": "7",
+  "creationTime": {
+    "timestamp": "1642361094",
+    "formatted": "Jan 16, 2022, 7:24:54 PM UTC"
+  },
+  "photoTakenTime": {
+    "timestamp": "1642281597",
+    "formatted": "Jan 15, 2022, 9:19:57 PM UTC"
+  },
+  "geoData": {
+    "latitude": 40.558699999999995,
+    "longitude": -111.6563,
+    "altitude": 0.0,
+    "latitudeSpan": 0.0,
+    "longitudeSpan": 0.0
+  },
+  "geoDataExif": {
+    "latitude": 40.558699999999995,
+    "longitude": -111.6563,
+    "altitude": 0.0,
+    "latitudeSpan": 0.0,
+    "longitudeSpan": 0.0
+  },
+  "url": "https://video-downloads.googleusercontent.com/AM87qErmMWsacOkH-rP6NMztDYgb40yY_c6yAVhByGT5i3muwvLlxL9S_dqM7Cqt9umoRGSlBHQVHvSoGzM1YcAX_hJesBVWmlKcATU8pfvo89aGoIKqpLVEG2MD6aCH0WTSF2iWywhdfg3YlCooWDR-Nhm6XYmBCalSm6wIRM5LiQaIvlXooDsBnp9co0-ygazGovxdWOx3-g2h9em16b8EmIdUnZrzkQK0ftE6QPEBe-eL1FRcxiM8ET2MG0Yw-ZiYtJOFFlqMr7DOeIxvTlvD4m72bIllzOEAN-2a-8CoJTovs1E7lD4RqQh5R7y3rNksjz-qB6aBOUy70BHL66FNhXhVRxmaSpiJXFDQQIEi9E-vA428vuB1BsdUIyPTLfxH_ujtZLsHI1S4WyCc4ctx4A9pERKqqEhvImiISEo6WX6RDm3WkkhzID3COLe3C2KbvGgrxVoSPs9syfS5TQFffEMayyvJKX9JqDr7WgfBJtcKvpgBe9jg2tgiMoZpf3YwvbgO5U1ads3K-nxAoCoS5-trTjp5iEmjAWf5n1qwtuTYFGTPBfDQcdgsgUwTYWZWkxDVK5xtw5VE82KWJ9C0slqa7eXNOz0BvWOSJhDvVBCebyp7VQ-YmM6msWDWLjHLhGB2Ttr93XoZG9340j-vbqVEkbnR4Sr9wO6Hn4CAEtV6wIyGW2y5Bsv8dOxpMcZWlFnf9EatGiM0iamkNOGEaNIpHYkhQjMRNf_l8uA8371wo2oRXOM9uMxXGMfQguI6DDm_hzpGdBIFLzwOhXvWPD2EuowoRErsr4x-anAizL7LBI9QQKOF_d0GvzmB1v33Dnge10kmkmqQecu1uDasFz_Ad4ylXYIN2eEKl3Khx009033eJTcxn9l6ER14Sh9HdzfvlelACkHkF0L0sNH2fXXv9EthcDwPdd6UugABur5xKGRBa88mSD83aLTSbjUtohYrJL0YZZwzF6Ov_EDESkzWdIkO4Dx0U7GuXklQ2WDpvWaIp6svVMST3VsZNN-LsoxhWqn6_LcYItcCfQEsBLOKPPpbAjaAHdcOt65yGyJCqvrm1-s0Ho8y21m5C3MXg8spv0Rmlwum-dJLXhxHjpWx7jLYqJv8IqHK_Fn4E89MqTBnwsKnn4Am1mhXJrsoEOOXVOTQyvll7W9UbS8pAcmISP6ilJDp_A2ggCPt8aniJv884gAGE7py-2DSLPvMVlGhaxi1yUS-ZGPekuCXGJil2laYnfR5hdfFVDnuG7JmZZyytbs",
+  "googlePhotosOrigin": {
+    "mobileUpload": {
+      "deviceFolder": {
+        "localFolderName": ""
+      },
+      "deviceType": "ANDROID_PHONE"
+    }
+  }
+}
