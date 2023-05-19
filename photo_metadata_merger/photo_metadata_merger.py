@@ -1,56 +1,52 @@
-import os
-import io
+import argparse
 import json
+import logging
+import os
 import tarfile
-import piexif
+from pathlib import PurePath, Path
 from PIL import Image
-from dateutil.parser import parse
-from pathlib import Path
+import piexif
 
-def process_takeout_archive(archive_path, output_folder):
-    with tarfile.open(archive_path, 'r:gz') as tar_ref:
-        for tar_info in tar_ref:
-            if tar_info.isfile():
-                with tar_ref.extractfile(tar_info) as file_obj:
-                    process_file(file_obj, tar_info.name, output_folder)
+from exifio.archive import Archive, ArchivePair, MetadataNotFound
+from exifio.metadata import TakeoutMetadata
 
-def process_file(file_obj, file_name, output_folder):
-    if file_name.endswith('.json'):
-        json_data = json.load(file_obj)
-        if 'photoTakenTime' in json_data:
-            photo_taken_time = json_data['photoTakenTime']['formatted']
-            image_file_name = os.path.splitext(file_name)[0]
-            process_image_file(image_file_name, photo_taken_time, output_folder)
+logging.basicConfig(filename='error.log', level=logging.ERROR)
 
-def process_image_file(image_file_name, photo_taken_time, output_folder):
-    date = parse(photo_taken_time).date()
-    dest_folder = os.path.join(output_folder, str(date))
-    Path(dest_folder).mkdir(parents=True, exist_ok=True)
-    dest_file_path = os.path.join(dest_folder, os.path.basename(image_file_name))
+def process_takeout_files(tarfile_paths, output_dir):
+    with Archive(*tarfile_paths) as archive:
+        for name_as_path, metadata_path in archive:
+            try:
+                pair = ArchivePair(name_as_path, metadata_path)
+                process_file(pair, archive, output_dir)
+            except MetadataNotFound as e:
+                logging.error(f"Metadata not found for {e.content_name}")
+                print(f"Metadata not found for {e.content_name}")
 
-    with open(dest_file_path, 'wb') as dest_file:
-        shutil.copyfileobj(file_obj, dest_file)
+def process_file(pair: ArchivePair, archive: Archive, output_dir: str):
+    # Get metadata from json
+    metadata_file = archive.extractfile(pair.metadata_name)
+    metadata = TakeoutMetadata(metadata_file.read())
+    
+    # Get image file and load with Pillow
+    img_file = archive.extractfile(pair.data_name)
+    img = Image.open(img_file)
 
-    update_exif_metadata(dest_file_path, photo_taken_time)
-
-def update_exif_metadata(image_file_path, photo_taken_time):
-    image = Image.open(image_file_path)
-    exif_dict = piexif.load(image.info['exif'])
-
-    exif_datetime = photo_taken_time.replace(':', '').replace(' ', ':')[:19]
-    exif_bytes = exif_datetime.encode('utf-8')
-
-    exif_dict['Exif'][piexif.ExifIFD.DateTimeOriginal] = exif_bytes
-    exif_dict['Exif'][piexif.ExifIFD.DateTime] = exif_bytes
-
+    # Update metadata
+    exif_dict = piexif.load(img.info['exif'])
+    exif_dict['0th'][piexif.ImageIFD.DateTime] = metadata.get_photo_taken_time().strftime("%Y:%m:%d %H:%M:%S")
+    exif_dict['GPS'][piexif.GPSIFD.GPSLatitude] = metadata.get_exif_location().latitude
+    exif_dict['GPS'][piexif.GPSIFD.GPSLongitude] = metadata.get_exif_location().longitude
     exif_bytes = piexif.dump(exif_dict)
-    image.save(image_file_path, exif=exif_bytes)
+    img.save(output_dir / pair.data_name, exif=exif_bytes)
 
 def main():
-    archive_path = 'path/to/your/takeout/archive.tgz'
-    output_folder = 'path/to/output/folder'
+    parser = argparse.ArgumentParser(description='Process Google Takeout files.')
+    parser.add_argument('tarfiles', metavar='N', type=str, nargs='+', help='input tar files')
+    parser.add_argument('output_dir', type=str, help='output directory for processed files')
 
-    process_takeout_archive(archive_path, output_folder)
+    args = parser.parse_args()
+
+    process_takeout_files(args.tarfiles, args.output_dir)
 
 if __name__ == '__main__':
     main()
