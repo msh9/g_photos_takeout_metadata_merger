@@ -1,9 +1,20 @@
 from pathlib import PurePath, Path
 
 resource_directory = 'resources'
-tarone_resource_directory = 'resources/tarone'
-tartwo_resource_directory = 'resources/tartwo'
-image_metadata_filename = 'example-img.png.json'
+tarone_resource_directory = resource_directory + '/tarone'
+tartwo_resource_directory = resource_directory + '/tartwo'
+image_metadata_filename = tarone_resource_directory + '/example-img.png.json'
+video_metadata_filename = tartwo_resource_directory + '/example-video.mp4.json'
 
-def get_path_resource_folder_added(filepath: str) -> PurePath:
-    return Path(filepath).parent.absolute().joinpath(resource_directory)
+def get_tests_folder() -> PurePath:
+    return Path(__file__).parent.absolute()
+
+def get_image_metadata() -> str:
+    with open(get_tests_folder().joinpath(image_metadata_filename), 'r') as metadata:
+        lines = metadata.read()
+    return lines
+
+def get_video_metadata() -> str:
+    with open(get_tests_folder().joinpath(video_metadata_filename), 'r') as metadata:
+        lines = metadata.read()
+    return lines
