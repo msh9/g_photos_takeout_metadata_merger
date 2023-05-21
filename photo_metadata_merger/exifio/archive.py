@@ -1,5 +1,7 @@
 import tarfile
 from pathlib import PurePath
+from dataclasses import dataclass
+from typing import IO
 
 _supported_image_file_extensions = [".jpg", ".jpeg", ".dng", ".png"]
 _supported_video_file_extensions = [".mkv", ".mp4"]
@@ -22,7 +24,7 @@ class Archive:
         for path in self._tarfile_paths:
             archive = tarfile.open(path, 'r:gz')
             self._archives.append(archive)
-            self._archive_iterators.append(iter(archive))
+            self._archive_iterators.append((iter(archive), archive))
         return self
         
     def __exit__(self, exc_type, exc_val, exc_tb):
@@ -42,10 +44,12 @@ class Archive:
         return (compressed_file_suffix in _supported_image_file_extensions or
                     compressed_file_suffix in _supported_video_file_extensions)
 
-    def _get_metadata_file_path(self, name: PurePath) -> PurePath:
+    def _get_metadata_file(self, name: PurePath) -> tuple[PurePath, tarfile.TarFile]:
         """
         Builds the metadata filename based on Google Takeout naming conventions and then checks for the metadata
-        file's presence in any one of the archives being processed. 
+        file's presence in any one of the archives being processed.
+
+        Returns the tarfile member info, if found, and the archive object that it was found in
         """
         metadata_file_path = name.with_suffix(name.suffix + _json_file_suffix)
         # the following forces the path to a posix style path. This is done because
@@ -57,30 +61,43 @@ class Archive:
         metadata_file_path_posix = metadata_file_path.as_posix()
         for archive in self._archives:
             try:
-                archive.getmember(metadata_file_path_posix)
+                metadata = archive.getmember(metadata_file_path_posix)
+                return (metadata, archive)
             except KeyError:
                 continue
-            else:
-                return metadata_file_path
         raise MetadataNotFound(str(name))
 
-    def _get_next_non_metadata_file(self):
-        for archive_iterators in self._archive_iterators:
+    def _get_next_non_metadata_file(self) -> 'ArchivePair':
+        for archive_iterator, archive in self._archive_iterators:
             try:
                 while True:
-                    compressed_file = next(archive_iterators)
+                    compressed_file = next(archive_iterator)
                     if compressed_file.isfile():
                         name_as_path = PurePath(compressed_file.name)
                         is_image_or_video = Archive._is_file_image_or_video(name_as_path)
                         if is_image_or_video:
-                            return (name_as_path, self._get_metadata_file_path(name_as_path))
+                            return ArchivePair(compressed_file, archive,
+                                               *self._get_metadata_file(name_as_path))
             except StopIteration as ex:
                 continue
         raise StopIteration
 
+    def extract_files(_, content_metadata_references: 'ArchivePair') -> tuple[IO[bytes], IO[bytes]]:
+        """
+        Accepts an archive pair object created by this archive instance. Passing an ArchivePair
+        object created by a different archive object may result in failure due to the underlying file
+        objects being closed
+        """
+        content_bytes = content_metadata_references._content_source_archive.extractfile(content_metadata_references.content_file)
+        metadata_bytes = content_metadata_references._metadata_source_archive.extractfile(content_metadata_references.metadata_file)
+
+        return (content_bytes, metadata_bytes)
+
+@dataclass
 class ArchivePair:
     """Transfer object for pairs of names identifying data and metadata objects discovered in a takeout archive"""
 
-    def __init__(self, data_name, metadata_name):
-        self.data_name = data_name
-        self.metadata_name = metadata_name
+    content_file: tarfile.TarInfo
+    _content_source_archive: tarfile.TarFile
+    metadata_file: tarfile.TarInfo
+    _metadata_source_archive: tarfile.TarFile

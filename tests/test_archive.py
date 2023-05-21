@@ -1,3 +1,4 @@
+import io
 import unittest
 import tarfile
 import tempfile
@@ -34,41 +35,45 @@ class TestArchive(unittest.TestCase):
         with tarfile.open(cls.second_archive_path, mode= "w:gz") as archive:
             TestArchive._create_test_archive_from_directory(archive, constants.tartwo_resource_directory)
     
-    def test_photo_archive_context(self):
+    def test_archive_context(self):
         with archive.Archive(TestArchive.first_archive_path) as pa:
             self.assertIsInstance(pa, archive.Archive)
 
-    def test_photo_archive_gets_next_image(self):
+    def test_archive_gets_next_image(self):
         with archive.Archive(TestArchive.first_archive_path) as pa:
-            non_metadata_path, metadata_path = next(pa)
-            self.assertIsNotNone(non_metadata_path)
-            self.assertIsNotNone(metadata_path)
-            self.assertFalse(non_metadata_path.name.endswith('.json'))
-            self.assertTrue(metadata_path.name.endswith('.json'))
+            archive_pair = next(pa)
+            self.assertIsNotNone(archive_pair.content_file)
+            self.assertIsNotNone(archive_pair.metadata_file)
+            self.assertIsNotNone(archive_pair.content_source_archive)
+            self.assertIsNotNone(archive_pair.metadata_source_archive)
 
-    def test_photo_archive_returns_correct_metadata_per_image(self):
+    def test_archive_returns_correct_metadata_per_image(self):
         with archive.Archive(TestArchive.first_archive_path) as pa:
-            non_metadata_archive_path, metadata_archive_path = next(pa)
-            non_metadata_path = pathlib.PurePath(non_metadata_archive_path)
-            self.assertEqual(pathlib.PurePath(metadata_archive_path), non_metadata_path.with_suffix(non_metadata_path.suffix + '.json')) 
+            archive_pair = next(pa)
+            content_path = pathlib.PurePath(archive_pair.content_file.name)
+            metadata_path = pathlib.PurePath(archive_pair.metadata_file.name)
+            self.assertEqual(metadata_path, content_path.with_suffix(content_path.suffix + '.json')) 
 
-    def test_photo_archive_returns_only_metadata_in_second_tuple_value(self):
+    def test_archive_only_returns_metadata_for_extant_images(self):
         with archive.Archive(TestArchive.first_archive_path, TestArchive.second_archive_path) as pa:
-            for _, metadata_archive_location in pa:
-                metadata_path = pathlib.PurePath(metadata_archive_location)
-                self.assertFalse(metadata_path.suffix != '.json')
-
-    def test_photo_archive_only_returns_metadata_for_extant_images(self):
-        with archive.Archive(TestArchive.first_archive_path, TestArchive.second_archive_path) as pa:
-            for _, metadata_archive_location in pa:
-                metadata_path = pathlib.PurePath(metadata_archive_location)
+            for archive_pair in pa:
+                metadata_path = pathlib.PurePath(archive_pair.metadata_file.name)
                 self.assertFalse(metadata_path.name == 'other-img.jpg.json')
 
-    def test_photo_archive_fails_on_missing_content_metadata(self):
+    def test_archive_fails_on_missing_content_metadata(self):
         with archive.Archive(TestArchive.first_archive_path) as pa:
             with self.assertRaises(archive.MetadataNotFound):
-                for _, _ in pa:
+                for _ in pa:
                     continue
+
+    def test_archive_extracts_files_from_archive(self):
+        with archive.Archive(TestArchive.first_archive_path) as pa:
+            archive_pair = next(pa)
+            content, metadata = pa.extract_files(archive_pair)
+            self.assertIsNotNone(content)
+            self.assertIsNotNone(metadata)
+            self.assertIsInstance(content, io.IOBase)
+            self.assertIsInstance(metadata, io.IOBase)
 
     @classmethod
     def tearDownClass(cls):
