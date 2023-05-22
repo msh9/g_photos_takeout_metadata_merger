@@ -44,5 +44,35 @@ class TestMetadata(unittest.TestCase):
         self.assertEqual(40.558699999999995, exif_location.latitude)
         self.assertEqual(-111.6564, exif_location.longitude)
 
+class TestLocation(unittest.TestCase):
+
+    def test_is_latitude_north(self):
+        north_location = metadata.Location(20.5, 21.5)
+        self.assertTrue(north_location.is_latitude_north())
+
+        south_location = metadata.Location(-20.5, 21.5)
+        self.assertFalse(south_location.is_latitude_north())
+
+    def test_is_longitude_west(self):
+        west_location = metadata.Location(20.5, -110.5)
+        self.assertTrue(west_location.is_longitude_west())
+
+        east_location = metadata.Location(20.5, 111.4)
+        self.assertFalse(east_location.is_longitude_west())
+
+    def test_get_latitude_as_deg_minutes_seconds(self):
+        degrees, minutes, seconds = metadata.Location(20.75, 110.75).get_latitude_as_deg_minutes_seconds()
+
+        self.assertEqual(degrees, 20)
+        self.assertEqual(minutes, 45)
+        self.assertEqual(seconds, 0)
+
+    def test_get_longitude_as_deg_minutes_seconds(self):
+        degrees, minutes, seconds = metadata.Location(20.75, -110.75).get_longitude_as_deg_minutes_seconds()
+
+        self.assertEqual(degrees, 110)
+        self.assertEqual(minutes, 45)
+        self.assertEqual(seconds, 0)
+
 if __name__ == '__main__':
     unittest.main()

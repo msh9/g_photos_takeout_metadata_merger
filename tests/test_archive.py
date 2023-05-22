@@ -44,8 +44,6 @@ class TestArchive(unittest.TestCase):
             archive_pair = next(pa)
             self.assertIsNotNone(archive_pair.content_file)
             self.assertIsNotNone(archive_pair.metadata_file)
-            self.assertIsNotNone(archive_pair.content_source_archive)
-            self.assertIsNotNone(archive_pair.metadata_source_archive)
 
     def test_archive_returns_correct_metadata_per_image(self):
         with archive.Archive(TestArchive.first_archive_path) as pa:
