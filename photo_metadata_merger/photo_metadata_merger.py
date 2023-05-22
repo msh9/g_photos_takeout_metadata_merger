@@ -1,52 +1,48 @@
 import argparse
-import json
 import logging
 import os
-import tarfile
-from pathlib import PurePath, Path
-from PIL import Image
-import piexif
+from pathlib import Path
+from photo_metadata_merger.exifio.metadata import TakeoutMetadata
+from photo_metadata_merger.exifio.archive import Archive, ArchivePair, MetadataNotFound
+from photo_metadata_merger.exifio.content import JpgContent, Content
 
-from exifio.archive import Archive, ArchivePair, MetadataNotFound
-from exifio.metadata import TakeoutMetadata
+# Initialize logging
+logging.basicConfig(filename='error_log.txt', level=logging.ERROR)
 
-logging.basicConfig(filename='error.log', level=logging.ERROR)
+# Command line arguments parser
+parser = argparse.ArgumentParser(description='Process Google Takeout archives.')
+parser.add_argument('tarfiles', type=str, nargs='+', help='Path to tarfile(s)')
+parser.add_argument('output_directory', type=str, help='Path to the output directory')
 
-def process_takeout_files(tarfile_paths, output_dir):
-    with Archive(*tarfile_paths) as archive:
-        for name_as_path, metadata_path in archive:
-            try:
-                pair = ArchivePair(name_as_path, metadata_path)
-                process_file(pair, archive, output_dir)
-            except MetadataNotFound as e:
-                logging.error(f"Metadata not found for {e.content_name}")
-                print(f"Metadata not found for {e.content_name}")
+args = parser.parse_args()
 
-def process_file(pair: ArchivePair, archive: Archive, output_dir: str):
-    # Get metadata from json
-    metadata_file = archive.extractfile(pair.metadata_name)
-    metadata = TakeoutMetadata(metadata_file.read())
-    
-    # Get image file and load with Pillow
-    img_file = archive.extractfile(pair.data_name)
-    img = Image.open(img_file)
+# Create the output directory if it doesn't exist
+Path(args.output_directory).mkdir(parents=True, exist_ok=True)
 
-    # Update metadata
-    exif_dict = piexif.load(img.info['exif'])
-    exif_dict['0th'][piexif.ImageIFD.DateTime] = metadata.get_photo_taken_time().strftime("%Y:%m:%d %H:%M:%S")
-    exif_dict['GPS'][piexif.GPSIFD.GPSLatitude] = metadata.get_exif_location().latitude
-    exif_dict['GPS'][piexif.GPSIFD.GPSLongitude] = metadata.get_exif_location().longitude
-    exif_bytes = piexif.dump(exif_dict)
-    img.save(output_dir / pair.data_name, exif=exif_bytes)
+for tarfile in args.tarfiles:
+    try:
+        with Archive(tarfile) as archive:
+            for content_metadata in archive:
+                content_bytes, metadata_bytes = archive.extract_files(content_metadata)
 
-def main():
-    parser = argparse.ArgumentParser(description='Process Google Takeout files.')
-    parser.add_argument('tarfiles', metavar='N', type=str, nargs='+', help='input tar files')
-    parser.add_argument('output_dir', type=str, help='output directory for processed files')
+                # Create a TakeoutMetadata instance
+                takeout_metadata = TakeoutMetadata(metadata_bytes.read().decode('utf-8'))
 
-    args = parser.parse_args()
+                # Check for file type and handle accordingly
+                if content_metadata.content_file.name.lower().endswith('.jpg'):
+                    content = JpgContent(content_bytes, takeout_metadata)
+                    content_file_path = Path(args.output_directory) / content_metadata.content_file.name
 
-    process_takeout_files(args.tarfiles, args.output_dir)
+                    # Check for name conflicts
+                    if content_file_path.exists():
+                        logging.warning(f"File {content_file_path} already exists, skipping.")
+                        continue
 
-if __name__ == '__main__':
-    main()
+                    content.process_content_metadata(content_file_path)
+                else:
+                    # Add other file types here
+                    pass
+
+    except MetadataNotFound as e:
+        print(f'Metadata not found for {e.content_name}')
+        logging.error(f'Metadata not found for {e.content_name}')
