@@ -19,11 +19,11 @@ class TakeoutMetadata:
     def get_photo_taken_time(self) -> datetime.datetime:
         return datetime.datetime.fromtimestamp(int(self._metadata['photoTakenTime']['timestamp']), datetime.timezone.utc)
 
-    def get_gphotos_location(self):
+    def get_gphotos_location(self) -> 'Location':
         geoData = self._metadata['geoData']
         return Location(geoData['latitude'], geoData['longitude'])
 
-    def get_exif_location(self):
+    def get_exif_location(self) -> 'Location':
         exif_geo_data = self._metadata['geoDataExif']
         return Location(exif_geo_data['latitude'], exif_geo_data['longitude'])
 
