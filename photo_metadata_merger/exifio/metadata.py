@@ -31,6 +31,9 @@ class TakeoutMetadata:
     def get_title(self) -> str:
         return self._metadata['title']
 
+    def get_description(self) -> str:
+        return self._metadata['description']
+
 class Location:
     """Represents a physical location recorded by Google Photos"""
 

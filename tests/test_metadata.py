@@ -45,6 +45,10 @@ class TestMetadata(unittest.TestCase):
         self.assertEqual(40.558699999999995, exif_location.latitude.coordinate)
         self.assertEqual(-111.6564, exif_location.longitude.coordinate)
 
+    def test_get_description(self):
+        photo_metadata = metadata.TakeoutMetadata(TestMetadata.photo_fixture)
+        self.assertEqual('foo bar', photo_metadata.get_description())
+
 class TestLocation(unittest.TestCase):
 
     def test_is_latitude_north(self):
