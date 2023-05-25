@@ -1,6 +1,7 @@
 import unittest
 import constants
 import datetime
+from fractions import Fraction
 from photo_metadata_merger.exifio import metadata
 
 class TestMetadata(unittest.TestCase):
@@ -41,8 +42,8 @@ class TestMetadata(unittest.TestCase):
     def test_get_exif_location(self):
         video_metadata = metadata.TakeoutMetadata(TestMetadata.video_fixture)
         exif_location = video_metadata.get_exif_location()
-        self.assertEqual(40.558699999999995, exif_location.latitude)
-        self.assertEqual(-111.6564, exif_location.longitude)
+        self.assertEqual(40.558699999999995, exif_location.latitude.coordinate)
+        self.assertEqual(-111.6564, exif_location.longitude.coordinate)
 
 class TestLocation(unittest.TestCase):
 
@@ -61,18 +62,26 @@ class TestLocation(unittest.TestCase):
         self.assertFalse(east_location.is_longitude_west())
 
     def test_get_latitude_as_deg_minutes_seconds(self):
-        degrees, minutes, seconds = metadata.Location(20.75, 110.75).get_latitude_as_deg_minutes_seconds()
-
-        self.assertEqual(degrees, 20)
-        self.assertEqual(minutes, 45)
-        self.assertEqual(seconds, 0)
+        rational_dms = metadata.Location(20.75, 110.75).get_latitude_as_deg_minutes_seconds()
+        self.assertEqual(rational_dms, '20/1 45/1 0/1')
 
     def test_get_longitude_as_deg_minutes_seconds(self):
-        degrees, minutes, seconds = metadata.Location(20.75, -110.75).get_longitude_as_deg_minutes_seconds()
+        rational_dms = metadata.Location(20.75, -110.75).get_longitude_as_deg_minutes_seconds()
+        self.assertEqual(rational_dms, '110/1 45/1 0/1')
 
-        self.assertEqual(degrees, 110)
-        self.assertEqual(minutes, 45)
-        self.assertEqual(seconds, 0)
+class TestCoordinate(unittest.TestCase):
+
+    def test_as_rational_string_positive(self):
+        gps = metadata.Coordinate(51.15)
+        self.assertEqual(gps.as_rational_string(), '51/1 8/1 527765581332435/8796093022208')
+
+    def test_as_rational_string_negative(self):
+        gps = metadata.Coordinate(-123.45)
+        self.assertEqual(gps.as_rational_string(), '123/1 27/1 45/4398046511104')
+
+    def test_as_rational_string_zero(self):
+        gps = metadata.Coordinate(0)
+        self.assertEqual(gps.as_rational_string(), '0/1 0/1 0/1')
 
 if __name__ == '__main__':
     unittest.main()

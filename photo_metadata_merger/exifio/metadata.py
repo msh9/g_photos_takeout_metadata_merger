@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from fractions import Fraction
 import datetime
 import json
 import math
@@ -30,35 +31,53 @@ class TakeoutMetadata:
     def get_title(self) -> str:
         return self._metadata['title']
 
-@dataclass
 class Location:
     """Represents a physical location recorded by Google Photos"""
 
-    latitude: float
-    longitude: float
+    def __init__(self, latitude: float, longitude: float) -> None:
+        self.latitude = Coordinate(latitude)
+        self.longitude = Coordinate(longitude)
 
-    def get_latitude_as_deg_minutes_seconds(self) -> tuple[int, int, float]:
-        return Location._convert_to_dms(self.latitude)
+    def get_latitude_as_deg_minutes_seconds(self) -> str:
+        return self.latitude.as_rational_string()
 
-
-    def get_longitude_as_deg_minutes_seconds(self) -> tuple[int, int, float]:
-        return Location._convert_to_dms(self.longitude)
+    def get_longitude_as_deg_minutes_seconds(self) -> str:
+        return self.longitude.as_rational_string()
 
     def is_latitude_north(self) -> bool:
-        return self.latitude > 0
+        return self.latitude.coordinate > 0
 
     def is_longitude_west(self) -> bool:
-        return self.longitude < 0
+        return self.longitude.coordinate < 0
+
+class Coordinate:
+    "Represents a single coordinate, eg a latitude"
+
+    def __init__(self, coordinate: float):
+        self.coordinate = coordinate
+
+    def as_rational_string(self) -> str:
+        rational_location = Coordinate._convert_to_fractional_dms(self.coordinate)
+        degrees = Coordinate._stringify_rational(rational_location[0])
+        minutes = Coordinate._stringify_rational(rational_location[1])
+        seconds = Coordinate._stringify_rational(rational_location[2])
+
+        return f'{degrees} {minutes} {seconds}'
 
     @staticmethod
-    def _convert_to_dms(decimal_degrees: float) -> tuple[int, int, float]:
+    def _stringify_rational(rational: Fraction) -> str:
+        return f'{rational.numerator}/{rational.denominator}'
+
+    @staticmethod
+    def _convert_to_fractional_dms(decimal_degrees: float) -> tuple[Fraction, Fraction, Fraction]:
         absolute_degrees = abs(decimal_degrees)
-        degrees = math.trunc(absolute_degrees)
+        degrees = Fraction(math.trunc(absolute_degrees))
         remainder_of_degrees = absolute_degrees - degrees
 
         decimal_minutes = remainder_of_degrees * _minutes_per_degree
-        minutes = math.trunc(decimal_minutes)
+        minutes = Fraction(math.trunc(decimal_minutes))
         remainder_of_minutes = decimal_minutes - minutes
 
-        seconds = remainder_of_minutes * _seconds_per_minute
+        seconds = Fraction(remainder_of_minutes * _seconds_per_minute)
         return (degrees, minutes, seconds)
+
