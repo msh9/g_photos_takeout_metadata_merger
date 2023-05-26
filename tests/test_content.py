@@ -21,7 +21,8 @@ class TestJpgContent(unittest.TestCase):
             "photoTakenTime": {"timestamp": "1621573200"},
             "geoData": {"latitude": 45.4215, "longitude": -75.6972},
             "geoDataExif": {"latitude": 45.4215, "longitude": -75.8972},
-            "title": "test_photo"
+            "title": "test_photo",
+            "description": "foo"
         }
 
         cls.test_file_path = pathlib.Path(cls.test_output_directory.name, "test.jpg")
