@@ -32,14 +32,14 @@ class JpgContent(Content):
     def _update_exif_metadata(self, image_content: pyexiv2.ImageData) -> None:
         photo_location = self._metadata.get_gphotos_location()
         image_content.modify_exif({
-            'Exif.Photo.DateTimeOriginal': self._metadata.get_photo_taken_time().isoformat(' ', 'minutes'),
+            'Exif.Photo.DateTimeOriginal': self._metadata.get_photo_taken_time().isoformat(),
             'Exif.Photo.OffsetTimeOriginal': '0',
-            'Exif.Photo.DateTimeDigitized': self._metadata.get_creation_time().isoformat(' ', 'minutes'),
+            'Exif.Photo.DateTimeDigitized': self._metadata.get_creation_time().isoformat(),
             'Exif.Photo.OffsetTimeDigitized': '0',
             'Exif.Image.XPTitle': self._metadata.get_title(),
             'Exif.GPSInfo.GPSLatitude': photo_location.get_latitude_as_deg_minutes_seconds(),
             'Exif.GPSInfo.GPSLatitudeRef': 'N' if photo_location.is_latitude_north() else 'S',
-            'Exif.GPSInfo.GPSLongitude': photo_location.get_latitude_as_deg_minutes_seconds(),
+            'Exif.GPSInfo.GPSLongitude': photo_location.get_longitude_as_deg_minutes_seconds(),
             'Exif.GPSInfo.GPSLongitudeRef': 'W' if photo_location.is_longitude_west() else 'E',
             'Exif.Image.ImageDescription': self._metadata.get_description()
         })

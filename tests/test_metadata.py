@@ -77,11 +77,11 @@ class TestCoordinate(unittest.TestCase):
 
     def test_as_rational_string_positive(self):
         gps = metadata.Coordinate(51.15)
-        self.assertEqual(gps.as_rational_string(), '51/1 8/1 527765581332435/8796093022208')
+        self.assertEqual(gps.as_rational_string(), '51/1 8/1 60/1')
 
     def test_as_rational_string_negative(self):
         gps = metadata.Coordinate(-123.45)
-        self.assertEqual(gps.as_rational_string(), '123/1 27/1 45/4398046511104')
+        self.assertEqual(gps.as_rational_string(), '123/1 27/1 0/1')
 
     def test_as_rational_string_zero(self):
         gps = metadata.Coordinate(0)

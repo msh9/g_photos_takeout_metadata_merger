@@ -1,5 +1,6 @@
 import unittest
 import pathlib
+import pyexiv2
 import exif
 import tempfile
 from photo_metadata_merger.exifio.content import JpgContent
@@ -38,27 +39,26 @@ class TestJpgContent(unittest.TestCase):
         self.assertTrue(TestJpgContent.test_file_path.exists())
 
     def test_process_content_updates_timestamps(self):
-        exif_data = exif.Image(TestJpgContent.test_fixture)
-
-        self.assertEqual(exif_data.get('datatime_original'), '2021-05-21 00:00')
-        self.assertEqual(exif_data.get('datatime_digitized'), '2023-05-22 13:34:53')
+        with pyexiv2.ImageData(TestJpgContent.test_fixture) as image_data:
+            exif = image_data.read_exif()
+            self.assertEqual(exif['Exif.Photo.DateTimeOriginal'], '2021-05-21T05:00:00+00:00')
+            self.assertEqual(exif['Exif.Photo.DateTimeDigitized'], '2023-05-22T19:34:53+00:00')
 
     def test_process_content_updates_location(self):
-        exif_data = exif.Image(TestJpgContent.test_fixture)
+        with pyexiv2.ImageData(TestJpgContent.test_fixture) as image_data:
+            exif = image_data.read_exif()
+            self.assertEqual(exif['Exif.GPSInfo.GPSLatitudeRef'], 'N')
+            self.assertEqual(exif['Exif.GPSInfo.GPSLongitudeRef'], 'W')
 
-        latitude_degrees_minutes_seconds = exif_data.get('gps_latitude')
-        longitude_degrees_minutes_seconds = exif_data.get('gps_longitude')
 
-        self.assertAlmostEqual(45.4215, TestJpgContent._deg_minute_second_to_decimal(*latitude_degrees_minutes_seconds))
-        self.assertAlmostEqual(75.8972, TestJpgContent._deg_minute_second_to_decimal(*longitude_degrees_minutes_seconds))
+            self.assertEquals(exif['Exif.GPSInfo.GPSLatitude'], '45/1 25/1 87/5')
+            self.assertEquals(exif['Exif.GPSInfo.GPSLongitude'], '75/1 41/1 1248/25')
 
-        self.assertEqual(exif_data.get('gps_latitude_ref'), 'N')
-        self.assertEqual(exif_data.get('gps_longitude_ref'), 'W')
 
     def test_process_content_updates_title(self):
-        exif_data = exif_data(TestJpgContent.test_fixture)
-
-        self.assertEqual(exif_data.get('xp_title'), 'test_photo')
+        with pyexiv2.ImageData(TestJpgContent.test_fixture) as image_data:
+            exif = image_data.read_exif()
+            self.assertEqual(exif['Exif.Image.XPTitle'], 'test_photo')
 
     @staticmethod
     def _deg_minute_second_to_decimal(degrees, minutes, seconds) -> float:

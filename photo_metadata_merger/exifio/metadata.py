@@ -69,7 +69,8 @@ class Coordinate:
 
     @staticmethod
     def _stringify_rational(rational: Fraction) -> str:
-        return f'{rational.numerator}/{rational.denominator}'
+        limited = rational.limit_denominator(1000)
+        return f'{limited.numerator}/{limited.denominator}'
 
     @staticmethod
     def _convert_to_fractional_dms(decimal_degrees: float) -> tuple[Fraction, Fraction, Fraction]:
