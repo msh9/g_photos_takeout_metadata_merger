@@ -3,12 +3,12 @@ import pathlib
 import pyexiv2
 import exif
 import tempfile
-from photo_metadata_merger.exifio.content import JpgContent
+from photo_metadata_merger.exifio.content import JpgPngContent
 from photo_metadata_merger.exifio.metadata import TakeoutMetadata
 import constants
 import json
 
-class TestJpgContent(unittest.TestCase):
+class TestJpgPngContent(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
@@ -29,23 +29,23 @@ class TestJpgContent(unittest.TestCase):
         cls.test_file_path = pathlib.Path(cls.test_output_directory.name, "test.jpg")
         metadata = TakeoutMetadata(json.dumps(mock_metadata_dict))
 
-        jpg_content = JpgContent(image, metadata)
+        jpg_content = JpgPngContent(image, metadata)
         jpg_content.process_content_metadata(cls.test_file_path)
 
         with open(cls.test_file_path, 'rb') as fixture_image:
             cls.test_fixture = fixture_image.read()
 
     def test_process_content_exists(self):
-        self.assertTrue(TestJpgContent.test_file_path.exists())
+        self.assertTrue(TestJpgPngContent.test_file_path.exists())
 
     def test_process_content_updates_timestamps(self):
-        with pyexiv2.ImageData(TestJpgContent.test_fixture) as image_data:
+        with pyexiv2.ImageData(TestJpgPngContent.test_fixture) as image_data:
             exif = image_data.read_exif()
             self.assertEqual(exif['Exif.Photo.DateTimeOriginal'], '2021-05-21T05:00:00+00:00')
             self.assertEqual(exif['Exif.Photo.DateTimeDigitized'], '2023-05-22T19:34:53+00:00')
 
     def test_process_content_updates_location(self):
-        with pyexiv2.ImageData(TestJpgContent.test_fixture) as image_data:
+        with pyexiv2.ImageData(TestJpgPngContent.test_fixture) as image_data:
             exif = image_data.read_exif()
             self.assertEqual(exif['Exif.GPSInfo.GPSLatitudeRef'], 'N')
             self.assertEqual(exif['Exif.GPSInfo.GPSLongitudeRef'], 'W')
@@ -56,7 +56,7 @@ class TestJpgContent(unittest.TestCase):
 
 
     def test_process_content_updates_title(self):
-        with pyexiv2.ImageData(TestJpgContent.test_fixture) as image_data:
+        with pyexiv2.ImageData(TestJpgPngContent.test_fixture) as image_data:
             exif = image_data.read_exif()
             self.assertEqual(exif['Exif.Image.XPTitle'], 'test_photo')
 
