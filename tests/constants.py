@@ -22,3 +22,6 @@ def get_video_metadata() -> str:
 
 def get_exif_fixture_path() -> PurePath:
     return get_tests_folder().joinpath(resource_directory).joinpath('exif-fixture.jpg')
+
+def get_xmp_fixture_path() -> PurePath:
+    return get_tests_folder().joinpath(resource_directory).joinpath('xmp-fixture.png')
