@@ -2,7 +2,7 @@ import unittest
 import pathlib
 import pyexiv2
 import tempfile
-from photo_metadata_merger.exifio.content import GenericXMPExifContent, GenericXMPContent
+from photo_metadata_merger.exifio.content import GenericXMPExifContent, GenericXMPContent, XMPSidecar
 from photo_metadata_merger.exifio.metadata import TakeoutMetadata
 import constants
 import json
@@ -104,6 +104,26 @@ class TestGenericXMPContent(unittest.TestCase):
     @classmethod
     def tearDownClass(cls):
         cls.test_output_directory.cleanup()
+
+class TestXMPSidecar(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        cls.test_output_directory = tempfile.TemporaryDirectory()
+        content_path = constants.get_xmp_fixture_path()
+        with open(content_path, 'rb') as media_file:
+            media = media_file.read()
+
+        cls.test_file_path = pathlib.Path(cls.test_output_directory.name, "test.png")
+        metadata = TakeoutMetadata(json.dumps(mock_metadata_dict))
+
+        content = XMPSidecar(media, metadata)
+        content.process_content_metadata(cls.test_file_path)
+
+        # TODO: this needs to pull up the sidecar instead of the media file
+        with open(cls.test_file_path, 'rb') as media:
+            cls.test_fixture = media.read()
+
 
 if __name__ == "__main__":
     unittest.main()

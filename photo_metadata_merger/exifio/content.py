@@ -13,6 +13,8 @@ _xmp_sidecar_starter_content = (b'<?xpacket begin="\xef\xbb\xbf" id="W5M0MpCehiH
                                 b'</x:xmpmeta>'
                                 b'<?xpacket end="w"?>')
 
+_xmp_sidecar_extension = '.xmp'
+
 class Content(ABC):
     """Base interface for processing metadata into content files"""
 
@@ -42,12 +44,6 @@ class Content(ABC):
     def _update_content_data(content: pyexiv2.ImageData) -> None:
         pass
 
-class XMPSidecar(Content):
-    """Supports writing XMP formatted information to a sidecar file instead of the main content file"""
-
-    def __init__(self, _, metadata: TakeoutMetadata):
-        super().__init__(_xmp_sidecar_starter_content, metadata)
-
 class GenericXMPContent(Content):
     """Relies on exiv2 library to supports files needing XMP formatted metadata only"""
 
@@ -68,10 +64,6 @@ class GenericXMPContent(Content):
 class GenericXMPExifContent(Content):
     """Extends generic XMP with support for writing EXIF style metadata as well"""
 
-    def process_content_metadata(self, save_to_path: pathlib.PurePath) -> None:
-        updated_content = self._update_metadata()
-        GenericXMPExifContent._save_content(updated_content, save_to_path)
-
     def _update_content_data(self, content: pyexiv2.ImageData) -> None:
         self._update_exif_metadata(content)
         self._set_xmp_title_date_description(content)
@@ -90,4 +82,24 @@ class GenericXMPExifContent(Content):
             'Exif.GPSInfo.GPSLongitudeRef': 'W' if photo_location.is_longitude_west() else 'E',
             'Exif.Image.ImageDescription': self._metadata.get_description()
         })
+
+class XMPSidecar(GenericXMPContent):
+    """Supports writing XMP formatted information to a sidecar file instead of the main content file"""
+
+    def __init__(self, content: IO[bytes], metadata: TakeoutMetadata):
+        super().__init__(_xmp_sidecar_starter_content, metadata)
+        self._media_content = content
+
+    def process_content_metadata(self, save_to_path: pathlib.PurePath) -> None:
+        content_path = save_to_path
+        metadata_path = save_to_path.suffix(_xmp_sidecar_extension)
+        sidecar_content = XMPSidecar._create_xmp_starter()
+
+        self._update_content_data(sidecar_content)
+        self._save_content(self._media_content, content_path)
+        self._save_content(sidecar_content.get_bytes(), metadata_path)
+
+    @staticmethod
+    def _create_xmp_starter() -> pyexiv2.ImageData:
+        return pyexiv2.ImageData(_xmp_sidecar_starter_content)
 
