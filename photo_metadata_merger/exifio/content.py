@@ -73,7 +73,7 @@ class GenericXMPExifContent(Content):
         image_content.modify_exif({
             'Exif.Photo.DateTimeOriginal': self._metadata.get_photo_taken_time(),
             'Exif.Photo.OffsetTimeOriginal': '0',
-            'Exif.Photo.DateTimeDigitized': self._metadata.get_creation_time().isoformat(),
+            'Exif.Photo.DateTimeDigitized': self._metadata.get_creation_time(),
             'Exif.Photo.OffsetTimeDigitized': '0',
             'Exif.Image.XPTitle': self._metadata.get_title(),
             'Exif.GPSInfo.GPSLatitude': photo_location.get_latitude_as_deg_minutes_seconds(),

@@ -40,8 +40,8 @@ class TestGenericXMPExifContent(unittest.TestCase):
     def test_process_content_updates_timestamps(self):
         with pyexiv2.ImageData(TestGenericXMPExifContent.test_fixture) as image_data:
             exif = image_data.read_exif()
-            self.assertEqual(exif['Exif.Photo.DateTimeOriginal'], '2021-05-21T05:00:00+00:00')
-            self.assertEqual(exif['Exif.Photo.DateTimeDigitized'], '2023-05-22T19:34:53+00:00')
+            self.assertEqual(exif['Exif.Photo.DateTimeOriginal'], '2021-05-21 05:00:00+00:00')
+            self.assertEqual(exif['Exif.Photo.DateTimeDigitized'], '2023-05-22 19:34:53+00:00')
 
     def test_process_content_updates_location(self):
         with pyexiv2.ImageData(TestGenericXMPExifContent.test_fixture) as image_data:
@@ -122,7 +122,15 @@ class TestXMPSidecar(unittest.TestCase):
 
         # TODO: this needs to pull up the sidecar instead of the media file
         with open(cls.test_file_path, 'rb') as media:
-            cls.test_fixture = media.read()
+            cls.media_test_fixture = media.read()
+        
+        metadata = cls.test_file_path.suffix('.xmp')
+
+    def test_process_content_writes_sidecar(self):
+        pass
+
+    def test_process_content_writes_media_identically(self):
+        pass
 
 
 if __name__ == "__main__":
