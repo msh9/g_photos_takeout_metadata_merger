@@ -1,3 +1,4 @@
+from typing import Type
 import unittest
 import pathlib
 import pyexiv2
@@ -61,49 +62,55 @@ class TestGenericXMPExifContent(unittest.TestCase):
     def tearDownClass(cls):
         cls.test_output_directory.cleanup()
 
-class TestGenericXMPContent(unittest.TestCase):
 
-    @classmethod
-    def setUpClass(cls):
-        cls.test_output_directory = tempfile.TemporaryDirectory()
-        content_path = constants.get_xmp_fixture_path()
-        with open(content_path, 'rb') as video_file:
-            video = video_file.read()
+def createXMPTestClass(fixture_file: pathlib.PurePath, test_fixture_output_name: str) -> Type[unittest.TestCase]:
+    class TestGenericXMPContent(unittest.TestCase):
 
-        cls.test_file_path = pathlib.Path(cls.test_output_directory.name, "test.png")
-        metadata = TakeoutMetadata(json.dumps(mock_metadata_dict))
+        @classmethod
+        def setUpClass(cls):
+            cls.test_output_directory = tempfile.TemporaryDirectory()
+            with open(fixture_file, 'rb') as media_file:
+                video = media_file.read()
 
-        mp4_content = GenericXMPContent(video, metadata)
-        mp4_content.process_content_metadata(cls.test_file_path)
+            cls.test_file_path = pathlib.Path(cls.test_output_directory.name, test_fixture_output_name)
+            metadata = TakeoutMetadata(json.dumps(mock_metadata_dict))
 
-        with open(cls.test_file_path, 'rb') as fixture_video:
-            cls.test_fixture = fixture_video.read()
+            mp4_content = GenericXMPContent(video, metadata)
+            mp4_content.process_content_metadata(cls.test_file_path)
 
-    def test_process_content_exists(self):
-        self.assertTrue(TestGenericXMPContent.test_file_path.exists())
+            with open(cls.test_file_path, 'rb') as media_fixture:
+                cls.test_fixture = media_fixture.read()
 
-    def test_process_content_updates_xmp_dates(self):
-        with pyexiv2.ImageData(TestGenericXMPContent.test_fixture) as content:
-            xmp = content.read_xmp()
-            self.assertEqual(xmp['Xmp.xmp.CreateDate'], '2021-05-21 05:00:00+00:00')
-            self.assertEqual(xmp['Xmp.exif.DateTimeOriginal'], '2021-05-21 05:00:00+00:00')
-            self.assertEqual(xmp['Xmp.exif.DateTimeDigitized'], '2023-05-22 19:34:53+00:00')
+        def test_process_content_exists(self):
+            self.assertTrue(TestGenericXMPContent.test_file_path.exists())
 
-    def test_process_content_updates_xmp_title_description(self):
-        with pyexiv2.ImageData(TestGenericXMPContent.test_fixture) as content:
-            xmp = content.read_xmp()
-            self.assertEqual(xmp['Xmp.dc.description'], {'lang="x-default"': 'foo'})
-            self.assertEqual(xmp['Xmp.exif.ImageDescription'], 'foo')
-        
-    def test_process_content_updates_xmp_exif_gps(self):
-        with pyexiv2.ImageData(TestGenericXMPContent.test_fixture) as content:
-            xmp = content.read_xmp()
-            self.assertEqual(xmp['Xmp.exif.GPSLatitude'], '45/1 25/1 87/5')
-            self.assertEqual(xmp['Xmp.exif.GPSLongitude'], '75/1 41/1 1248/25')
+        def test_process_content_updates_xmp_dates(self):
+            with pyexiv2.ImageData(TestGenericXMPContent.test_fixture) as content:
+                xmp = content.read_xmp()
+                self.assertEqual(xmp['Xmp.xmp.CreateDate'], '2021-05-21 05:00:00+00:00')
+                self.assertEqual(xmp['Xmp.exif.DateTimeOriginal'], '2021-05-21 05:00:00+00:00')
+                self.assertEqual(xmp['Xmp.exif.DateTimeDigitized'], '2023-05-22 19:34:53+00:00')
 
-    @classmethod
-    def tearDownClass(cls):
-        cls.test_output_directory.cleanup()
+        def test_process_content_updates_xmp_title_description(self):
+            with pyexiv2.ImageData(TestGenericXMPContent.test_fixture) as content:
+                xmp = content.read_xmp()
+                self.assertEqual(xmp['Xmp.dc.description'], {'lang="x-default"': 'foo'})
+                self.assertEqual(xmp['Xmp.exif.ImageDescription'], 'foo')
+            
+        def test_process_content_updates_xmp_exif_gps(self):
+            with pyexiv2.ImageData(TestGenericXMPContent.test_fixture) as content:
+                xmp = content.read_xmp()
+                self.assertEqual(xmp['Xmp.exif.GPSLatitude'], '45/1 25/1 87/5')
+                self.assertEqual(xmp['Xmp.exif.GPSLongitude'], '75/1 41/1 1248/25')
+
+        @classmethod
+        def tearDownClass(cls):
+            cls.test_output_directory.cleanup()
+
+    return TestGenericXMPContent
+
+pngXMPTest = createXMPTestClass(constants.get_xmp_fixture_path(), 'test.png')
+globals()['PngXMPTest'] = pngXMPTest
 
 class TestXMPSidecar(unittest.TestCase):
 
