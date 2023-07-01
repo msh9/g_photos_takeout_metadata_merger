@@ -18,6 +18,8 @@ mock_metadata_dict = {
     "description": "foo"
 }
 
+# TODO: setUpClass methods badly need to be refactored.
+
 class TestGenericXMPExifContent(unittest.TestCase):
 
     @classmethod
