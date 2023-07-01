@@ -92,7 +92,7 @@ class XMPSidecar(GenericXMPContent):
 
     def process_content_metadata(self, save_to_path: pathlib.PurePath) -> None:
         content_path = save_to_path
-        metadata_path = save_to_path.suffix(_xmp_sidecar_extension)
+        metadata_path = save_to_path.with_suffix(_xmp_sidecar_extension)
         sidecar_content = XMPSidecar._create_xmp_starter()
 
         self._update_content_data(sidecar_content)
