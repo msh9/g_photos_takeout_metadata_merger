@@ -173,3 +173,6 @@ pip-selfcheck.json
 
 # vscode
 .vscode
+
+# project
+log.txt

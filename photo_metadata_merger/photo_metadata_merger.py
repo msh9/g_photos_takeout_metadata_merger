@@ -1,37 +1,43 @@
 import argparse
 import logging
-import os
-from pathlib import Path
-from photo_metadata_merger.exifio.metadata import TakeoutMetadata
-from photo_metadata_merger.exifio.archive import Archive, ArchivePair, MetadataNotFound
-from photo_metadata_merger.exifio.content import JpgContent, Content
+from pathlib import PurePath, Path
+from exifio.metadata import TakeoutMetadata
+from exifio.archive import Archive, MetadataNotFound
+from exifio.content import GenericXMPExifContent, XMPSidecar
 
 # Initialize logging
-logging.basicConfig(filename='error_log.txt', level=logging.ERROR)
+logging.basicConfig(filename='log.txt', level=logging.INFO)
 
-# Command line arguments parser
-parser = argparse.ArgumentParser(description='Process Google Takeout archives.')
-parser.add_argument('tarfiles', type=str, nargs='+', help='Path to tarfile(s)')
-parser.add_argument('output_directory', type=str, help='Path to the output directory')
+def setup_arguments():
+    parser = argparse.ArgumentParser(description='Process Google Takeout archives.')
+    parser.add_argument('tarfiles', type=str, nargs='+', help='Path to tarfile(s)')
+    parser.add_argument('output_directory', type=str, help='Path to the output directory')
+    return parser
 
-args = parser.parse_args()
+def run_extraction(args):
+    # Create the output directory if it doesn't exist
+    Path(args.output_directory).mkdir(parents=True, exist_ok=True)
 
-# Create the output directory if it doesn't exist
-Path(args.output_directory).mkdir(parents=True, exist_ok=True)
+    for tarfile in args.tarfiles:
+        try:
+            with Archive(tarfile) as archive:
+                for content_metadata in archive:
+                    content_bytes, metadata_bytes = archive.extract_files(content_metadata)
 
-for tarfile in args.tarfiles:
-    try:
-        with Archive(tarfile) as archive:
-            for content_metadata in archive:
-                content_bytes, metadata_bytes = archive.extract_files(content_metadata)
+                    # Create a TakeoutMetadata instance
+                    takeout_metadata = TakeoutMetadata(metadata_bytes.read().decode('utf-8'))
+                    content_file_extension = PurePath(content_metadata.content_file.name).suffix.lower()
+                    content_file_path = Path(args.output_directory).joinpath(content_metadata.content_file.name)
 
-                # Create a TakeoutMetadata instance
-                takeout_metadata = TakeoutMetadata(metadata_bytes.read().decode('utf-8'))
+                    logging.info(f"Reading {content_metadata.content_file.name} and writing to {content_file_path}")
 
-                # Check for file type and handle accordingly
-                if content_metadata.content_file.name.lower().endswith('.jpg'):
-                    content = JpgContent(content_bytes, takeout_metadata)
-                    content_file_path = Path(args.output_directory) / content_metadata.content_file.name
+                    # Check for file type and handle accordingly
+                    if content_file_extension == '.jpg' or content_file_extension == '.png':
+                        content = GenericXMPExifContent(content_bytes, takeout_metadata)
+                    else:
+                        logging.info(f"Writing sidecar for {content_file_path}")
+                        content = XMPSidecar(content_bytes, takeout_metadata)
+                        pass
 
                     # Check for name conflicts
                     if content_file_path.exists():
@@ -39,10 +45,15 @@ for tarfile in args.tarfiles:
                         continue
 
                     content.process_content_metadata(content_file_path)
-                else:
-                    # Add other file types here
-                    pass
 
-    except MetadataNotFound as e:
-        print(f'Metadata not found for {e.content_name}')
-        logging.error(f'Metadata not found for {e.content_name}')
+        except MetadataNotFound as e:
+            logging.error(f'Metadata not found for {e.content_name}')
+
+def main():
+    arg_parser = setup_arguments()
+    program_arguments = arg_parser.parse_args()
+    logging.info(f"Running with {program_arguments}")
+    run_extraction(program_arguments)
+
+if __name__ == "__main__":
+    main() 
