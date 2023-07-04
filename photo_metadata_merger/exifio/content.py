@@ -29,8 +29,12 @@ class Content(ABC):
             Content._save_content(content.get_bytes(), save_to_path)
 
     def _set_xmp_title_date_description(self, content: pyexiv2.ImageData) -> None:
+        # Note well Xmp.xmp.CreateDate expects a slightly different fromat of timestamp
+        # sprint from Xmp.exif.DateTime*. Specifically compare the following examples,
+        # Xmp.xmp.CreateDate = 2022-12-01T00:00:00
+        # Xmp.exif.DateTimeOriginal = 2022-12-01 00:00:00
         content.modify_xmp({
-            'Xmp.xmp.CreateDate': self._metadata.get_photo_taken_time(),
+            'Xmp.xmp.CreateDate': self._metadata.get_photo_taken_time().isoformat(),
             'Xmp.dc.title': {'lang="x-defualt"': self._metadata.get_title()},
             'Xmp.dc.description': {'lang="x-default"': self._metadata.get_description()}
         })
@@ -54,8 +58,8 @@ class GenericXMPContent(Content):
     def _set_exif_in_xmp(self, content: pyexiv2.ImageData) -> None:
         photo_location = self._metadata.get_gphotos_location()
         content.modify_xmp({
-            'Xmp.exif.DateTimeOriginal': self._metadata.get_photo_taken_time(),
-            'Xmp.exif.DateTimeDigitized': self._metadata.get_creation_time(),
+            'Xmp.exif.DateTimeOriginal': self._metadata.get_photo_taken_time().isoformat(' '),
+            'Xmp.exif.DateTimeDigitized': self._metadata.get_creation_time().isoformat(' '),
             'Xmp.exif.GPSLatitude': photo_location.get_latitude_as_deg_minutes_seconds(),
             'Xmp.exif.GPSLongitude': photo_location.get_longitude_as_deg_minutes_seconds(),
             'Xmp.exif.ImageDescription': self._metadata.get_description()
@@ -71,9 +75,9 @@ class GenericXMPExifContent(Content):
     def _update_exif_metadata(self, image_content: pyexiv2.ImageData) -> None:
         photo_location = self._metadata.get_gphotos_location()
         image_content.modify_exif({
-            'Exif.Photo.DateTimeOriginal': self._metadata.get_photo_taken_time(),
+            'Exif.Photo.DateTimeOriginal': self._metadata.get_photo_taken_time().isoformat(' '),
             'Exif.Photo.OffsetTimeOriginal': '0',
-            'Exif.Photo.DateTimeDigitized': self._metadata.get_creation_time(),
+            'Exif.Photo.DateTimeDigitized': self._metadata.get_creation_time().isoformat(' '),
             'Exif.Photo.OffsetTimeDigitized': '0',
             'Exif.Image.XPTitle': self._metadata.get_title(),
             'Exif.GPSInfo.GPSLatitude': photo_location.get_latitude_as_deg_minutes_seconds(),

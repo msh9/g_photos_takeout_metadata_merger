@@ -89,7 +89,7 @@ class TestGenericXMPContent(unittest.TestCase):
     def test_process_content_updates_xmp_dates(self):
         with pyexiv2.ImageData(TestGenericXMPContent.test_fixture) as content:
             xmp = content.read_xmp()
-            self.assertEqual(xmp['Xmp.xmp.CreateDate'], '2021-05-21 05:00:00+00:00')
+            self.assertEqual(xmp['Xmp.xmp.CreateDate'], '2021-05-21T05:00:00+00:00')
             self.assertEqual(xmp['Xmp.exif.DateTimeOriginal'], '2021-05-21 05:00:00+00:00')
             self.assertEqual(xmp['Xmp.exif.DateTimeDigitized'], '2023-05-22 19:34:53+00:00')
 
@@ -143,7 +143,7 @@ class TestXMPSidecar(unittest.TestCase):
     def test_process_content_updates_xmp_dates(self):
         with pyexiv2.ImageData(TestXMPSidecar.media_test_fixture) as content:
             xmp = content.read_xmp()
-            self.assertEqual(xmp['Xmp.xmp.CreateDate'], '2021-05-21 05:00:00+00:00')
+            self.assertEqual(xmp['Xmp.xmp.CreateDate'], '2021-05-21T05:00:00+00:00')
             self.assertEqual(xmp['Xmp.exif.DateTimeOriginal'], '2021-05-21 05:00:00+00:00')
             self.assertEqual(xmp['Xmp.exif.DateTimeDigitized'], '2023-05-22 19:34:53+00:00')
 
