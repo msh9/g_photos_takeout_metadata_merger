@@ -18,6 +18,9 @@ _xmp_sidecar_extension = '.xmp'
 class Content(ABC):
     """Base interface for processing metadata into content files"""
 
+    # set pyexiv2 global log level
+    pyexiv2.set_log_level(4)
+
     def __init__(self, content: IO[bytes], metadata: TakeoutMetadata) -> None:
         self._content = content
         self._metadata = metadata
