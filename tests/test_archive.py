@@ -40,13 +40,13 @@ class TestArchive(unittest.TestCase):
             self.assertIsInstance(pa, archive.Archive)
 
     def test_archive_gets_next_image(self):
-        with archive.Archive(TestArchive.first_archive_path) as pa:
+        with archive.Archive(TestArchive.first_archive_path, TestArchive.second_archive_path) as pa:
             archive_pair = next(pa)
             self.assertIsNotNone(archive_pair.content_file)
             self.assertIsNotNone(archive_pair.metadata_file)
 
     def test_archive_returns_correct_metadata_per_image(self):
-        with archive.Archive(TestArchive.first_archive_path) as pa:
+        with archive.Archive(TestArchive.first_archive_path, TestArchive.second_archive_path) as pa:
             archive_pair = next(pa)
             content_path = pathlib.PurePath(archive_pair.content_file.name)
             metadata_path = pathlib.PurePath(archive_pair.metadata_file.name)
