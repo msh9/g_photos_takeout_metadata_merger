@@ -60,8 +60,8 @@ class GenericXMPContent(Content):
         content.modify_xmp({
             'Xmp.exif.DateTimeOriginal': self._metadata.get_photo_taken_time().isoformat(' '),
             'Xmp.exif.DateTimeDigitized': self._metadata.get_creation_time().isoformat(' '),
-            'Xmp.exif.GPSLatitude': photo_location.latitude.as_rational(),
-            'Xmp.exif.GPSLongitude': photo_location.longitude.as_rational(),
+            'Xmp.exif.GPSLatitude': photo_location.get_latitude_as_deg_minutes_seconds(),
+            'Xmp.exif.GPSLongitude': photo_location.get_longitude_as_deg_minutes_seconds(),
             'Xmp.exif.ImageDescription': self._metadata.get_description()
         })
 

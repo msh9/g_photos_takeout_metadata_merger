@@ -67,9 +67,6 @@ class Coordinate:
 
         return f'{degrees} {minutes} {seconds}'
 
-    def as_rational(self) -> tuple[Fraction, Fraction, Fraction]:
-        return Coordinate._convert_to_fractional_dms(self.coordinate)
-
     @staticmethod
     def _stringify_rational(rational: Fraction) -> str:
         limited = rational.limit_denominator(1000)
