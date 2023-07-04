@@ -1,5 +1,5 @@
 import unittest
-import constants
+import tests.constants as constants
 import datetime
 from fractions import Fraction
 from photo_metadata_merger.exifio import metadata
