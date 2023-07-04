@@ -65,7 +65,7 @@ class TestArchive(unittest.TestCase):
                     continue
 
     def test_archive_extracts_files_from_archive(self):
-        with archive.Archive(TestArchive.first_archive_path) as pa:
+        with archive.Archive(TestArchive.first_archive_path, TestArchive.second_archive_path) as pa:
             archive_pair = next(pa)
             content, metadata = pa.extract_files(archive_pair)
             self.assertIsNotNone(content)
