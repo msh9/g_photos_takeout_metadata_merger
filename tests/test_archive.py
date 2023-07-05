@@ -64,7 +64,7 @@ class TestArchive(unittest.TestCase):
                 for _ in pa:
                     continue
 
-    def test_archive_extracts_files_from_archive(self):
+    def test_archive_extracts_from_archive(self):
         with archive.Archive(TestArchive.first_archive_path, TestArchive.second_archive_path) as pa:
             archive_pair = next(pa)
             content, metadata = pa.extract_files(archive_pair)
@@ -72,6 +72,16 @@ class TestArchive(unittest.TestCase):
             self.assertIsNotNone(metadata)
             self.assertIsInstance(content, io.IOBase)
             self.assertIsInstance(metadata, io.IOBase)
+
+    def test_archive_extracts_bufferedreader_from_archive(self):
+        with archive.Archive(TestArchive.first_archive_path, TestArchive.second_archive_path) as pa:
+            archive_pair = next(pa)
+            content, metadata = pa.extract_files(archive_pair)
+            content_bytes = content.read()
+            self.assertTrue(len(content_bytes) > 0)
+
+            metadata_bytes = metadata.read()
+            self.assertTrue(len(metadata_bytes) > 0)
 
     @classmethod
     def tearDownClass(cls):
