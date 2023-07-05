@@ -20,8 +20,11 @@ def get_video_metadata() -> str:
         lines = metadata.read()
     return lines
 
-def get_exif_fixture_path() -> PurePath:
+def get_exif_fixture_path() -> Path:
     return get_tests_folder().joinpath(resource_directory).joinpath('exif-fixture.jpg')
 
-def get_xmp_fixture_path() -> PurePath:
+def get_xmp_fixture_path() -> Path:
     return get_tests_folder().joinpath(resource_directory).joinpath('xmp-fixture.png')
+
+def get_persisted_hash_fixture_path() -> Path:
+    return get_tests_folder().joinpath(resource_directory).joinpath('persisted.json.gz')
