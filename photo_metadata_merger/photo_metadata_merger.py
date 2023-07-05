@@ -14,6 +14,11 @@ def setup_arguments():
     parser.add_argument('output_directory', type=str, help='Path to the output directory')
     return parser
 
+def create_and_ensure_destination_path(root: Path, rest: Path) -> Path:
+    content_destination = root.joinpath(rest.parent.stem, rest.name)
+    content_destination.parent.mkdir(parents=True, exist_ok=True)
+    return content_destination
+
 def run_extraction(args):
     # Create the output directory if it doesn't exist
     Path(args.output_directory).mkdir(parents=True, exist_ok=True)
@@ -31,14 +36,17 @@ def run_extraction(args):
             logging.debug(f'Reading from archives with names {content_metadata}')
             content_reader, metadata_reader = archive.extract_files(content_metadata)
 
-            # Create a TakeoutMetadata instance
             takeout_metadata = TakeoutMetadata(metadata_reader.read().decode('utf-8'))
-            content_file_extension = PurePath(content_metadata.content_file.name).suffix.lower()
-            content_file_path = Path(args.output_directory).joinpath(content_metadata.content_file.name)
+            content_name_as_path = PurePath(content_metadata.content_file.name)
+            content_file_path = create_and_ensure_destination_path(
+                Path(args.output_directory),
+                content_name_as_path
+            )
 
             logging.info(f"Reading {content_metadata.content_file.name} and writing to {content_file_path}")
 
             content_bytes = content_reader.read()
+            content_file_extension = content_name_as_path.suffix.lower()
             if content_file_extension == '.jpg' or content_file_extension == '.png':
                 content = GenericXMPExifContent(content_bytes, takeout_metadata)
             else:
