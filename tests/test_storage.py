@@ -19,6 +19,11 @@ class TestInMemory(unittest.TestCase):
         self.inmemory.add(hexHash, location)
         self.assertTrue(self.inmemory.seen(hexHash))  # hexHash should be seen after adding it
 
+    def test_added_bytes_reports_as_seen(self):
+        data = b'12345abcedef'
+        self.inmemory.add_content_bytes(data, 'foo/bar')
+        self.assertTrue(self.inmemory.seen_content_bytes(data))
+
     def test_duplicate_key_raises_error(self):
         hexHash = "abcd1234"
         location1 = Path('/path/to/file1')

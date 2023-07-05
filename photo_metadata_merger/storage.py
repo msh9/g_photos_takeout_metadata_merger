@@ -1,5 +1,6 @@
 import json
 import gzip
+import hashlib
 from pathlib import Path
 
 class DuplicateKey(Exception):
@@ -17,11 +18,21 @@ class InMemory:
     def seen(self, hexHash: str) -> bool:
         return hexHash in self._local.keys()
 
+    def seen_content_bytes(self, content: bytes) -> bool:
+        return self.seen(self._hash(content))
+
     def add(self, hexHash: str, location: Path):
         if not hexHash in self._local:
             self._local[hexHash] = location
         else:
             raise DuplicateKey(hexHash, str(location))
+
+    def add_content_bytes(self, content: bytes, location: Path):
+        return self.add(self._hash(content), location)
+
+    def _hash(self, content: bytes) -> str:
+        file_hash = hashlib.sha1(content, usedforsecurity=False)
+        return file_hash.hexdigest()
 
 class Persisted(InMemory):
     """Adds file system persistence to InMemory by supporting export to compressed JSON"""
