@@ -1,7 +1,9 @@
 import tarfile
 from pathlib import PurePath
 from dataclasses import dataclass
+import logging
 from typing import IO
+from io import BufferedReader
 
 _supported_image_file_extensions = [".jpg", ".jpeg", ".dng", ".png"]
 _supported_video_file_extensions = [".mkv", ".mp4"]
@@ -82,16 +84,15 @@ class Archive:
                 continue
         raise StopIteration
 
-    def extract_files(_, content_metadata_references: 'ArchivePair') -> tuple[IO[bytes], IO[bytes]]:
+    def extract_files(_, content_metadata_references: 'ArchivePair') -> tuple[BufferedReader, BufferedReader]:
         """
         Accepts an archive pair object created by this archive instance. Passing an ArchivePair
         object created by a different archive object may result in failure due to the underlying file
-        objects being closed
+        objects being closed. 
         """
-        content_bytes = content_metadata_references._content_source_archive.extractfile(content_metadata_references.content_file)
-        metadata_bytes = content_metadata_references._metadata_source_archive.extractfile(content_metadata_references.metadata_file)
-
-        return (content_bytes, metadata_bytes)
+        content_reader = content_metadata_references._content_source_archive.extractfile(content_metadata_references.content_file.name)
+        metadata_reader = content_metadata_references._metadata_source_archive.extractfile(content_metadata_references.metadata_file.name)
+        return (content_reader, metadata_reader)
 
 @dataclass
 class ArchivePair:

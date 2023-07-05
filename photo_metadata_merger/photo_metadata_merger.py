@@ -6,7 +6,7 @@ from exifio.archive import Archive, MetadataNotFound
 from exifio.content import GenericXMPExifContent, XMPSidecar
 
 # Initialize logging
-logging.basicConfig(filename='log.txt', level=logging.INFO)
+logging.basicConfig(level=logging.DEBUG)
 
 def setup_arguments():
     parser = argparse.ArgumentParser(description='Process Google Takeout archives.')
@@ -28,23 +28,22 @@ def run_extraction(args):
                 continue
             except StopIteration:
                 break
-
-            content_bytes, metadata_bytes = archive.extract_files(content_metadata)
+            logging.debug(f'Reading from archives with names {content_metadata}')
+            content_reader, metadata_reader = archive.extract_files(content_metadata)
 
             # Create a TakeoutMetadata instance
-            takeout_metadata = TakeoutMetadata(metadata_bytes.read().decode('utf-8'))
+            takeout_metadata = TakeoutMetadata(metadata_reader.read().decode('utf-8'))
             content_file_extension = PurePath(content_metadata.content_file.name).suffix.lower()
             content_file_path = Path(args.output_directory).joinpath(content_metadata.content_file.name)
 
             logging.info(f"Reading {content_metadata.content_file.name} and writing to {content_file_path}")
 
-            # Check for file type and handle accordingly
+            content_bytes = content_reader.read()
             if content_file_extension == '.jpg' or content_file_extension == '.png':
                 content = GenericXMPExifContent(content_bytes, takeout_metadata)
             else:
                 logging.info(f"Writing sidecar for {content_file_path}")
                 content = XMPSidecar(content_bytes, takeout_metadata)
-                pass
 
             # Check for name conflicts
             if content_file_path.exists():
@@ -52,7 +51,7 @@ def run_extraction(args):
                 continue
 
             content.process_content_metadata(content_file_path)
-
+            logging.info(f"Finished {content_metadata.content_file.name}")
 def main():
     arg_parser = setup_arguments()
     program_arguments = arg_parser.parse_args()

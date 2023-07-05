@@ -1,5 +1,4 @@
 from abc import ABC, abstractmethod
-from typing import IO
 from .metadata import TakeoutMetadata
 import pathlib
 import pyexiv2
@@ -21,7 +20,7 @@ class Content(ABC):
     # set pyexiv2 global log level
     pyexiv2.set_log_level(4)
 
-    def __init__(self, content: IO[bytes], metadata: TakeoutMetadata) -> None:
+    def __init__(self, content: bytes, metadata: TakeoutMetadata) -> None:
         self._content = content
         self._metadata = metadata
         super().__init__()
@@ -43,7 +42,7 @@ class Content(ABC):
         })
 
     @staticmethod
-    def _save_content(content: bytes, save_to_path: pathlib.PurePath) -> None:
+    def _save_content(content: bytes, save_to_path: pathlib.Path) -> None:
         with open(save_to_path, 'wb') as image_file:
             image_file.write(content)
 
@@ -93,11 +92,11 @@ class GenericXMPExifContent(Content):
 class XMPSidecar(GenericXMPContent):
     """Supports writing XMP formatted information to a sidecar file instead of the main content file"""
 
-    def __init__(self, content: IO[bytes], metadata: TakeoutMetadata):
+    def __init__(self, content: bytes, metadata: TakeoutMetadata):
         super().__init__(_xmp_sidecar_starter_content, metadata)
         self._media_content = content
 
-    def process_content_metadata(self, save_to_path: pathlib.PurePath) -> None:
+    def process_content_metadata(self, save_to_path: pathlib.Path) -> None:
         content_path = save_to_path
         metadata_path = save_to_path.with_suffix(_xmp_sidecar_extension)
         sidecar_content = XMPSidecar._create_xmp_starter()
