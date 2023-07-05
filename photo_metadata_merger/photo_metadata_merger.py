@@ -17,37 +17,41 @@ def setup_arguments():
 def run_extraction(args):
     # Create the output directory if it doesn't exist
     Path(args.output_directory).mkdir(parents=True, exist_ok=True)
+    logging.warning(args)
+    with Archive(*args.tarfiles) as archive:
+        archives_entries = iter(archive)
+        while True:
+            try:
+                content_metadata = next(archives_entries)
+            except MetadataNotFound as e:
+                logging.error(f'Metadata not found for {e.content_name}')
+                continue
+            except StopIteration:
+                break
 
-    for tarfile in args.tarfiles:
-        try:
-            with Archive(tarfile) as archive:
-                for content_metadata in archive:
-                    content_bytes, metadata_bytes = archive.extract_files(content_metadata)
+            content_bytes, metadata_bytes = archive.extract_files(content_metadata)
 
-                    # Create a TakeoutMetadata instance
-                    takeout_metadata = TakeoutMetadata(metadata_bytes.read().decode('utf-8'))
-                    content_file_extension = PurePath(content_metadata.content_file.name).suffix.lower()
-                    content_file_path = Path(args.output_directory).joinpath(content_metadata.content_file.name)
+            # Create a TakeoutMetadata instance
+            takeout_metadata = TakeoutMetadata(metadata_bytes.read().decode('utf-8'))
+            content_file_extension = PurePath(content_metadata.content_file.name).suffix.lower()
+            content_file_path = Path(args.output_directory).joinpath(content_metadata.content_file.name)
 
-                    logging.info(f"Reading {content_metadata.content_file.name} and writing to {content_file_path}")
+            logging.info(f"Reading {content_metadata.content_file.name} and writing to {content_file_path}")
 
-                    # Check for file type and handle accordingly
-                    if content_file_extension == '.jpg' or content_file_extension == '.png':
-                        content = GenericXMPExifContent(content_bytes, takeout_metadata)
-                    else:
-                        logging.info(f"Writing sidecar for {content_file_path}")
-                        content = XMPSidecar(content_bytes, takeout_metadata)
-                        pass
+            # Check for file type and handle accordingly
+            if content_file_extension == '.jpg' or content_file_extension == '.png':
+                content = GenericXMPExifContent(content_bytes, takeout_metadata)
+            else:
+                logging.info(f"Writing sidecar for {content_file_path}")
+                content = XMPSidecar(content_bytes, takeout_metadata)
+                pass
 
-                    # Check for name conflicts
-                    if content_file_path.exists():
-                        logging.warning(f"File {content_file_path} already exists, skipping.")
-                        continue
+            # Check for name conflicts
+            if content_file_path.exists():
+                logging.warning(f"File {content_file_path} already exists, skipping.")
+                continue
 
-                    content.process_content_metadata(content_file_path)
-
-        except MetadataNotFound as e:
-            logging.error(f'Metadata not found for {e.content_name}')
+            content.process_content_metadata(content_file_path)
 
 def main():
     arg_parser = setup_arguments()

@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import IO
-from photo_metadata_merger.exifio.metadata import TakeoutMetadata
+from .metadata import TakeoutMetadata
 import pathlib
 import pyexiv2
 
