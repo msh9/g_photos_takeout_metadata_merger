@@ -1,8 +1,6 @@
 import tarfile
 from pathlib import PurePath
 from dataclasses import dataclass
-import logging
-from typing import IO
 from io import BufferedReader
 
 _supported_image_file_extensions = [".jpg", ".jpeg", ".dng", ".png"]

@@ -28,7 +28,7 @@ class Content(ABC):
     def process_content_metadata(self, save_to_path: pathlib.PurePath) -> None:
         with pyexiv2.ImageData(self._content) as content:
             self._update_content_data(content)
-            Content._save_content(content.get_bytes(), save_to_path)
+            self._save_content(content.get_bytes(), save_to_path)
 
     def _set_xmp_title_date_description(self, content: pyexiv2.ImageData) -> None:
         # Note well Xmp.xmp.CreateDate expects a slightly different fromat of timestamp
@@ -41,8 +41,7 @@ class Content(ABC):
             'Xmp.dc.description': {'lang="x-default"': self._metadata.get_description()}
         })
 
-    @staticmethod
-    def _save_content(content: bytes, save_to_path: pathlib.Path) -> None:
+    def _save_content(self, content: bytes, save_to_path: pathlib.Path) -> None:
         with open(save_to_path, 'wb') as image_file:
             image_file.write(content)
 

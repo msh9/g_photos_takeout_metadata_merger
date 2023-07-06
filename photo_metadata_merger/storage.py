@@ -23,7 +23,7 @@ class InMemory:
 
     def add(self, hexHash: str, location: Path):
         if not hexHash in self._local:
-            self._local[hexHash] = location
+            self._local[hexHash] = str(location)
         else:
             raise DuplicateKey(hexHash, str(location))
 
