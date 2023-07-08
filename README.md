@@ -18,6 +18,11 @@ does not support video files so for those file types and others we write XMP sid
 
 ## Goals
 
-- Take standard image and video metadata, like creation time, that Google Photos stores separately and embed that data into the files.
+- Take standard image and video metadata, like creation time, that Google Photos stores separately and embed that data into the files. For everything else we
+export to a XMP sidecar.
 - Perform as much, if not all, processing in memory by streaming the archive contents
 - Only extract the base content files and their associated metadata
+- Extract each media file exactly once. This is achieved by hashing the content and storing in an in-memory dictionary. The dictionary is persisted
+between applications runs by saving to a gzipped JSON file. This should probably be replaced with something more robust like sqlite, etc.
+- Extract each media file in a 'YYYY/MM' folder structure. Takeout archives contain folders for each album, duplicating images for every different album they appear in.
+Beside deduplicating files we also collapse the export into a more standardized, date based, folder structure.
