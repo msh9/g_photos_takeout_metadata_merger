@@ -3,16 +3,15 @@ import gzip
 import hashlib
 from pathlib import Path
 
+
 class DuplicateKey(Exception):
-
-
     def __init__(self, hash: str, name: str):
         self.hash = hash
         self.name = name
 
+
 class InMemory:
     """Defines an in-memory set for data depulication and name tracking"""
-
 
     def __init__(self):
         self._local = dict()
@@ -36,13 +35,13 @@ class InMemory:
         file_hash = hashlib.sha1(content, usedforsecurity=False)
         return file_hash.hexdigest()
 
+
 class Persisted(InMemory):
     """Adds file system persistence to InMemory by supporting export to compressed JSON"""
 
-
     @staticmethod
     def _load_from_file(on_disk: Path) -> dict[str, str]:
-        with gzip.open(on_disk, 'rt') as f:
+        with gzip.open(on_disk, "rt") as f:
             data = json.load(f)
         return data
 
@@ -54,5 +53,5 @@ class Persisted(InMemory):
             self._local |= existing_stored
 
     def save(self):
-        with gzip.open(self._persistance_path, 'wt') as f:
+        with gzip.open(self._persistance_path, "wt") as f:
             json.dump(self._local, f)
