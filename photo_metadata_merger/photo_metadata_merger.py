@@ -76,7 +76,7 @@ def run_extraction(args):
                 seen_content.save()
 
             logging.info(f"Finished {content_metadata.content_file.name}")
-    
+
     seen_content.save()
 def main():
     arg_parser = setup_arguments()
@@ -85,4 +85,4 @@ def main():
     run_extraction(program_arguments)
 
 if __name__ == "__main__":
-    main() 
+    main()

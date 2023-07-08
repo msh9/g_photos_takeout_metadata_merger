@@ -17,6 +17,7 @@ _xmp_sidecar_extension = '.xmp'
 class Content(ABC):
     """Base interface for processing metadata into content files"""
 
+
     # set pyexiv2 global log level
     pyexiv2.set_log_level(4)
 
@@ -51,6 +52,7 @@ class Content(ABC):
 
 class GenericXMPContent(Content):
     """Relies on exiv2 library to supports files needing XMP formatted metadata only"""
+
 
     def _update_content_data(self, content: pyexiv2.ImageData) -> None:
         self._set_xmp_title_date_description(content)
@@ -107,4 +109,3 @@ class XMPSidecar(GenericXMPContent):
     @staticmethod
     def _create_xmp_starter() -> pyexiv2.ImageData:
         return pyexiv2.ImageData(_xmp_sidecar_starter_content)
-

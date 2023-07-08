@@ -11,6 +11,7 @@ _resource_directory = 'resources'
 
 class TestArchive(unittest.TestCase):
 
+
     @staticmethod
     def _create_test_archive_from_directory(archive: tarfile.TarFile, directory_name: str) -> None:
             cls_path = pathlib.Path(__file__).parent.absolute()
@@ -27,14 +28,14 @@ class TestArchive(unittest.TestCase):
         cls._archive_directory = tempfile.TemporaryDirectory()
         cls.first_archive_path = pathlib.Path(TestArchive._archive_directory.name, 'test1.tgz')
         
-        with tarfile.open(cls.first_archive_path, mode= "w:gz") as archive:
+        with tarfile.open(cls.first_archive_path, mode="w:gz") as archive:
             TestArchive._create_test_archive_from_directory(archive, constants.tarone_resource_directory)
 
         cls.second_archive_path = pathlib.Path(TestArchive._archive_directory.name, 'test2.tgz')
 
-        with tarfile.open(cls.second_archive_path, mode= "w:gz") as archive:
+        with tarfile.open(cls.second_archive_path, mode="w:gz") as archive:
             TestArchive._create_test_archive_from_directory(archive, constants.tartwo_resource_directory)
-    
+
     def test_archive_context(self):
         with archive.Archive(TestArchive.first_archive_path) as pa:
             self.assertIsInstance(pa, archive.Archive)
@@ -86,6 +87,7 @@ class TestArchive(unittest.TestCase):
     @classmethod
     def tearDownClass(cls):
         cls._archive_directory.cleanup()
+
 
 if __name__ == '__main__':
     unittest.main()

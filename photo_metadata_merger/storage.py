@@ -5,12 +5,14 @@ from pathlib import Path
 
 class DuplicateKey(Exception):
 
+
     def __init__(self, hash: str, name: str):
         self.hash = hash
         self.name = name
 
 class InMemory:
     """Defines an in-memory set for data depulication and name tracking"""
+
 
     def __init__(self):
         self._local = dict()
@@ -22,7 +24,7 @@ class InMemory:
         return self.seen(self._hash(content))
 
     def add(self, hexHash: str, location: Path):
-        if not hexHash in self._local:
+        if hexHash not in self._local:
             self._local[hexHash] = str(location)
         else:
             raise DuplicateKey(hexHash, str(location))
@@ -36,6 +38,7 @@ class InMemory:
 
 class Persisted(InMemory):
     """Adds file system persistence to InMemory by supporting export to compressed JSON"""
+
 
     @staticmethod
     def _load_from_file(on_disk: Path) -> dict[str, str]:

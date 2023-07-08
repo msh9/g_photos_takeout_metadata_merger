@@ -22,6 +22,7 @@ mock_metadata_dict = {
 
 class TestGenericXMPExifContent(unittest.TestCase):
 
+
     @classmethod
     def setUpClass(cls):
         cls.test_output_directory = tempfile.TemporaryDirectory()
@@ -68,6 +69,7 @@ class TestGenericXMPExifContent(unittest.TestCase):
 
 class TestGenericXMPContent(unittest.TestCase):
 
+
     @classmethod
     def setUpClass(cls):
         cls.test_output_directory = tempfile.TemporaryDirectory()
@@ -109,7 +111,9 @@ class TestGenericXMPContent(unittest.TestCase):
     def tearDownClass(cls):
         cls.test_output_directory.cleanup()
 
+
 class TestXMPSidecar(unittest.TestCase):
+
 
     @classmethod
     def setUpClass(cls):
@@ -129,7 +133,6 @@ class TestXMPSidecar(unittest.TestCase):
         cls.metadata_file_path = cls.test_file_path.with_suffix('.xmp')
         with open(cls.metadata_file_path, 'rb') as media:
             cls.media_test_fixture = media.read()
-        
 
     def test_process_content_writes_sidecar(self):
         self.assertTrue(TestXMPSidecar.metadata_file_path.exists())
@@ -152,12 +155,13 @@ class TestXMPSidecar(unittest.TestCase):
             xmp = content.read_xmp()
             self.assertEqual(xmp['Xmp.dc.description'], {'lang="x-default"': 'foo'})
             self.assertEqual(xmp['Xmp.exif.ImageDescription'], 'foo')
-        
+
     def test_process_content_updates_xmp_exif_gps(self):
         with pyexiv2.ImageData(TestXMPSidecar.media_test_fixture) as content:
             xmp = content.read_xmp()
             self.assertEqual(xmp['Xmp.exif.GPSLatitude'], '45/1 25/1 87/5')
             self.assertEqual(xmp['Xmp.exif.GPSLongitude'], '75/1 41/1 1248/25')
+
 
 if __name__ == "__main__":
     unittest.main()

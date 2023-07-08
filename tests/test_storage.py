@@ -4,7 +4,10 @@ import tests.constants as constants
 import tempfile
 from photo_metadata_merger.storage import InMemory, DuplicateKey, Persisted
 
+
 class TestInMemory(unittest.TestCase):
+
+
     def setUp(self):
         self.inmemory = InMemory()
 
@@ -36,7 +39,10 @@ class TestInMemory(unittest.TestCase):
         self.assertEqual(context.exception.hash, hexHash)
         self.assertEqual(context.exception.name, str(location2))
 
+
 class TestPersisted(unittest.TestCase):
+
+
     @classmethod
     def setUpClass(cls):
         cls.persisted_from_disk =  Persisted(constants.get_persisted_hash_fixture_path())
@@ -57,6 +63,7 @@ class TestPersisted(unittest.TestCase):
     @classmethod
     def tearDownClass(cls):
         cls.test_directory.cleanup()
+
 
 if __name__ == '__main__':
     unittest.main()
