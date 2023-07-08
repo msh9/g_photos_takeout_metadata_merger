@@ -26,3 +26,22 @@ export to a XMP sidecar.
 between applications runs by saving to a gzipped JSON file. This should probably be replaced with something more robust like sqlite, etc.
 - Extract each media file in a 'YYYY/MM' folder structure. Takeout archives contain folders for each album, duplicating images for every different album they appear in.
 Beside deduplicating files we also collapse the export into a more standardized, date based, folder structure.
+
+## Usage
+
+Ensure that you're on a platform and python interpreter version supported by pyexiv2 and then,
+
+- `git clone https://github.com/msh9/g_photos_takeout_metadata_merger.git`
+- preferably, set up your choice virtual env
+- `pip install -r requirements.txt`
+- if you like tests, `python -m unittest discover tests`
+- from the checkout, `python photo_metadata_merger/photo_metadata_merger.py`
+
+## ToDos
+
+This works for my purposes now so these are unlikely to be addressed.
+
+- Refactor the setup class functions in test_content.py
+- Refactor the main execution function in photo_metadata_merger.py
+- Update storage classes to use something more robust that a periodically saved, gzipped, JSON file.
+- Setup as an installable package / make it easier to use
